@@ -27,8 +27,11 @@ class FloatLayout(FloatLayout):
     Window.size = (360, 200)  # These static values correspond to the window size.
     status_text = StringProperty()  # Both status_text and ip_address values correspond to a string value as it's
     # subject to change.
-    ip_address = StringProperty()  
+    ip_address = StringProperty()
 
+    # Here we are initialising the 'FloatLayout' class that will hold our 2D graphic design. This is done by using
+    # positional points for our linear lines to create a star. We then set the colour to red by adjusting the RGB
+    # (Red, Green, Blue) values.
     def __init__(self, **kwargs):
         super(FloatLayout, self).__init__(**kwargs)
 
@@ -38,23 +41,31 @@ class FloatLayout(FloatLayout):
             Color(255, 255, 255, 1, mode="rgba")
             Line(points=(320, 5, 335, 45, 350, 5, 315, 30, 355, 30, 320, 5))
 
+    # This function will connect the client to the server. This is done by first stating the client is not connected to
+    # any server. We then define the 'HOST' and 'PORT' variables acustom to our machine; our IP is the NAT IP
+    # (192.168.51.1) and the given port is 6789, this is because the server has determined this port for communication.
+    # We then try to connect to the given server; if successful, a message displaying a successful connection will
+    # display. We then use our '_on_file_drop' function to upload files to our server. This is done by checking if the
+    # amount of characters sent is not equal to an empty string; if the condition is true, then the 'value' variable
+    # (which holds the file being uploaded) will be encoded and sent. If the characters sent is equal to zero, it will
+    # return an error; otherwise the characters were sent successfully.
     def connect_to_server(self, instance, value):
-        self.status_text = ('Not connected')
+        self.status_text = 'Not connected'
         HOST = self.ip.text
         PORT = 6789
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(0.1)
             s.connect((HOST, PORT))
-            self.status_text = ('Connection Test Successful \nDrag and Drop Files to Send')
+            self.status_text = 'Connection Test Successful \nDrag and Drop Files to Send'
             print(s)
-            # Drag and Drop
+
             Window.bind(on_drop_file=self._on_file_drop)
 
-            if (value != ''):
+            if value != '':
                 sent = str(s.send(value.encode()))
                 if sent == 0:
-                    self.status_text = ('Failure: 0 Characters Sent')
+                    self.status_text = 'Failure: 0 Characters Sent'
                 else:
                     print(sent + ' Characters Sent Successfully')
                     print(value)
@@ -69,24 +80,33 @@ class FloatLayout(FloatLayout):
             self.status_text = ('Connection Test Failure: \n' + str(e))
         return
 
+    # Here is the function that will handle our file uploading via 'drag and drop'. This will print the variable
+    # 'file_path' (that holds the path to the file), opens that file in read mode and uses the 'connect_to_server'
+    # function to send it.
     def _on_file_drop(self, window, file_path, x, y):
         print(file_path)
         data = open(file_path, 'r').read()
         self.connect_to_server('', data)
         return
 
+    # Simple function that directs the user to a html page through the web browser when clicked on.
     def help(self):
         webbrowser.open('help.html', new=2, autoraise=True)
 
+    # Will terminate application when executed.
     def exit(self):
         sys.exit()
 
 
+# Here is the initialisation of the Kivy application, this will start our Kivy application.
 class MyApp(App):
     def build(self):
         self.title = 'Python Client'
         return FloatLayout()
 
 
+# When true (it always is), the Kivy application will start.
 if __name__ == '__main__':
     MyApp().run()
+
+# The 'my.kv' file holds the layout design for the Kivy application.
